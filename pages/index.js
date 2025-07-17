@@ -1,4 +1,4 @@
-// WordRally – modernes, freundliches Farbschema
+// WordRally – modernes, neutrales Farbschema (Beige)
 
 import { useState, useEffect } from "react";
 
@@ -80,7 +80,7 @@ export default function WordRally() {
   };
 
   return (
-    <div className="min-h-screen bg-pink-50 text-gray-800 font-sans p-6">
+    <div className="min-h-screen bg-[#fdf6e3] text-gray-800 font-sans p-6">
       <style>{`
         .shake {
           animation: shake 0.3s;
@@ -107,23 +107,23 @@ export default function WordRally() {
           transition: background-color 0.3s ease, transform 0.2s ease;
         }
         .tile.correct {
-          background-color: #10b981; /* teal green */
+          background-color: #4caf50; /* friendly green */
         }
         .tile.misplaced {
-          background-color: #fbbf24; /* amber */
+          background-color: #ffb74d; /* soft orange */
         }
         .tile.wrong {
-          background-color: #e5e7eb; /* light gray */
+          background-color: #d7ccc8; /* light beige gray */
         }
       `}</style>
 
-      <h1 className="text-4xl mb-6 border-b border-pink-400 pb-2">WordRally 🌸</h1>
+      <h1 className="text-4xl mb-6 border-b border-yellow-400 pb-2">WordRally</h1>
 
       <div className="flex flex-wrap gap-4 mb-6">
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          className="bg-white text-gray-700 p-2 border border-pink-300 rounded"
+          className="bg-white text-gray-700 p-2 border border-yellow-300 rounded"
         >
           <option value="de">Deutsch</option>
           <option value="en">English</option>
@@ -131,7 +131,7 @@ export default function WordRally() {
         <select
           value={length}
           onChange={(e) => setLength(Number(e.target.value))}
-          className="bg-white text-gray-700 p-2 border border-pink-300 rounded"
+          className="bg-white text-gray-700 p-2 border border-yellow-300 rounded"
         >
           {[5, 6, 7, 8].map((n) => (
             <option key={n} value={n}>{n} Buchstaben</option>
@@ -145,19 +145,19 @@ export default function WordRally() {
           onChange={(e) => setGuess(e.target.value.toLowerCase())}
           onKeyDown={handleKeyDown}
           maxLength={length}
-          className={`bg-white text-gray-800 border ${error ? "border-red-400" : "border-pink-300"} w-full p-2 rounded ${shake ? "shake" : ""}`}
+          className={`bg-white text-gray-800 border ${error ? "border-red-400" : "border-yellow-300"} w-full p-2 rounded ${shake ? "shake" : ""}`}
           placeholder="Dein Wort"
         />
         <button
           onClick={handleGuess}
-          className="mt-3 bg-pink-400 hover:bg-pink-500 w-full py-2 text-lg font-bold text-white rounded"
+          className="mt-3 bg-yellow-400 hover:bg-yellow-500 w-full py-2 text-lg font-bold text-white rounded"
         >
           Raten
         </button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
 
-      <div className="bg-white border border-pink-200 p-4 rounded space-y-2">
+      <div className="bg-white border border-yellow-200 p-4 rounded space-y-2">
         {history.length === 0 && <p className="text-gray-500">Gib dein erstes Wort ein!</p>}
         {history.map((attempt, i) => (
           <div key={i} className="flex gap-2">

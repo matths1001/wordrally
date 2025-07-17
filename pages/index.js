@@ -1,9 +1,6 @@
-// WordRally – mit Retro-Styling und verbessertem Layout
+// WordRally – Retro-Styling ohne externe UI-Komponenten
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 const wordLists = {
   de: {
@@ -87,28 +84,30 @@ export default function WordRally() {
       </div>
 
       <div className="mb-6">
-        <Input
+        <input
           value={guess}
           onChange={(e) => setGuess(e.target.value.toLowerCase())}
           maxLength={length}
-          className="bg-gray-900 text-green-400 border border-green-600 w-full p-2"
+          className="bg-gray-900 text-green-400 border border-green-600 w-full p-2 rounded"
           placeholder="Dein Wort"
         />
-        <Button onClick={handleGuess} className="mt-3 bg-green-600 hover:bg-green-700 w-full py-2 text-lg font-bold">
+        <button
+          onClick={handleGuess}
+          className="mt-3 bg-green-600 hover:bg-green-700 w-full py-2 text-lg font-bold rounded"
+        >
           Raten
-        </Button>
+        </button>
       </div>
 
-      <Card className="bg-gray-900 border border-green-700">
-        <CardContent>
-          {history.length === 0 && <p className="text-green-500">Gib dein erstes Wort ein!</p>}
-          {history.map((entry, i) => (
-            <div key={i} className="mb-2">
-              <span className="text-white">{entry.guess}</span> → 🎯 {entry.inPlace} richtig platziert, ✔ {entry.correct} richtig
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <div className="bg-gray-900 border border-green-700 p-4 rounded">
+        {history.length === 0 && <p className="text-green-500">Gib dein erstes Wort ein!</p>}
+        {history.map((entry, i) => (
+          <div key={i} className="mb-2">
+            <span className="text-white">{entry.guess}</span> → 🎯 {entry.inPlace} richtig platziert, ✔ {entry.correct} richtig
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
+

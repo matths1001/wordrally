@@ -1,4 +1,4 @@
-// WordRally – mit Buchstaben-Farbanzeige (🟩🟨⬛)
+// WordRally – Eingabeverbesserung mit Wackelanimation bei Fehler
 
 import { useState, useEffect } from "react";
 
@@ -23,19 +23,29 @@ export default function WordRally() {
   const [target, setTarget] = useState("");
   const [guess, setGuess] = useState("");
   const [history, setHistory] = useState([]);
+  const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
 
   useEffect(() => {
     const words = wordLists[language][length];
     const random = words[Math.floor(Math.random() * words.length)];
     setTarget(random);
+    setHistory([]);
+    setGuess("");
+    setError("");
   }, [language, length]);
 
   const handleGuess = () => {
-    if (guess.length !== length) return;
+    if (guess.length !== length) {
+      setError(`Das Wort muss genau ${length} Buchstaben haben.`);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+    setError("");
     const result = [];
     const used = Array(length).fill(false);
 
-    // Erst richtige Positionen prüfen
     for (let i = 0; i < length; i++) {
       if (guess[i] === target[i]) {
         result.push({ letter: guess[i], status: "correct" });
@@ -45,7 +55,6 @@ export default function WordRally() {
       }
     }
 
-    // Dann falsche Positionen prüfen
     for (let i = 0; i < length; i++) {
       if (result[i].status === "") {
         let found = false;
@@ -73,8 +82,27 @@ export default function WordRally() {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleGuess();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-green-400 font-mono p-6">
+      <style>{`
+        .shake {
+          animation: shake 0.3s;
+        }
+        @keyframes shake {
+          0% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          50% { transform: translateX(5px); }
+          75% { transform: translateX(-5px); }
+          100% { transform: translateX(0); }
+        }
+      `}</style>
+
       <h1 className="text-4xl mb-6 border-b border-green-700 pb-2">WordRally 🟢</h1>
 
       <div className="flex flex-wrap gap-4 mb-6">
@@ -101,8 +129,9 @@ export default function WordRally() {
         <input
           value={guess}
           onChange={(e) => setGuess(e.target.value.toLowerCase())}
+          onKeyDown={handleKeyDown}
           maxLength={length}
-          className="bg-gray-900 text-green-400 border border-green-600 w-full p-2 rounded"
+          className={`bg-gray-900 text-green-400 border ${error ? "border-red-500" : "border-green-600"} w-full p-2 rounded ${shake ? "shake" : ""}`}
           placeholder="Dein Wort"
         />
         <button
@@ -111,6 +140,7 @@ export default function WordRally() {
         >
           Raten
         </button>
+        {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
 
       <div className="bg-gray-900 border border-green-700 p-4 rounded space-y-2">

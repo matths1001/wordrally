@@ -1,4 +1,4 @@
-// WordRally – mit Flip-Animation, Wackeln bei Fehlern und sanften Farbübergängen
+// WordRally – Flip-Animation + Glow-Farben für Appstore-taugliches Design
 
 import { useState, useEffect } from "react";
 
@@ -107,21 +107,25 @@ export default function WordRally() {
           transform-style: preserve-3d;
         }
         @keyframes flip {
-          0% { transform: rotateX(0); }
-          100% { transform: rotateX(360deg); }
+          0% { transform: scale(0.95) rotateX(0); opacity: 0.3; }
+          50% { transform: scale(1.05) rotateX(180deg); opacity: 0.6; }
+          100% { transform: scale(1) rotateX(360deg); opacity: 1; }
         }
 
         .tile {
-          transition: background-color 0.3s ease, transform 0.2s ease;
+          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s;
         }
         .tile.correct {
-          background-color: #16a34a;
+          background-color: #00FF7F;
+          box-shadow: 0 0 12px #00FF7F;
         }
         .tile.misplaced {
-          background-color: #eab308;
+          background-color: #FFD700;
+          box-shadow: 0 0 12px #FFD700;
         }
         .tile.wrong {
-          background-color: #1f2937;
+          background-color: #111;
+          box-shadow: inset 0 0 6px #000;
         }
       `}</style>
 
@@ -184,5 +188,3 @@ export default function WordRally() {
     </div>
   );
 }
-
-

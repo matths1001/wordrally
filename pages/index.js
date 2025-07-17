@@ -1,4 +1,4 @@
-// WordRally – Retro-Styling ohne externe UI-Komponenten
+// WordRally – mit Buchstaben-Farbanzeige (🟩🟨⬛)
 
 import { useState, useEffect } from "react";
 
@@ -32,31 +32,45 @@ export default function WordRally() {
 
   const handleGuess = () => {
     if (guess.length !== length) return;
-    let correct = 0;
-    let inPlace = 0;
+    const result = [];
     const used = Array(length).fill(false);
 
+    // Erst richtige Positionen prüfen
     for (let i = 0; i < length; i++) {
       if (guess[i] === target[i]) {
-        inPlace++;
+        result.push({ letter: guess[i], status: "correct" });
         used[i] = true;
+      } else {
+        result.push({ letter: guess[i], status: "" });
       }
     }
 
+    // Dann falsche Positionen prüfen
     for (let i = 0; i < length; i++) {
-      if (guess[i] !== target[i]) {
+      if (result[i].status === "") {
+        let found = false;
         for (let j = 0; j < length; j++) {
           if (!used[j] && guess[i] === target[j]) {
-            correct++;
+            found = true;
             used[j] = true;
             break;
           }
         }
+        result[i].status = found ? "misplaced" : "wrong";
       }
     }
 
-    setHistory([...history, { guess, inPlace, correct }]);
+    setHistory([...history, result]);
     setGuess("");
+  };
+
+  const getColor = (status) => {
+    switch (status) {
+      case "correct": return "bg-green-600";
+      case "misplaced": return "bg-yellow-500";
+      case "wrong": return "bg-gray-800";
+      default: return "bg-black";
+    }
   };
 
   return (
@@ -99,11 +113,18 @@ export default function WordRally() {
         </button>
       </div>
 
-      <div className="bg-gray-900 border border-green-700 p-4 rounded">
+      <div className="bg-gray-900 border border-green-700 p-4 rounded space-y-2">
         {history.length === 0 && <p className="text-green-500">Gib dein erstes Wort ein!</p>}
-        {history.map((entry, i) => (
-          <div key={i} className="mb-2">
-            <span className="text-white">{entry.guess}</span> → 🎯 {entry.inPlace} richtig platziert, ✔ {entry.correct} richtig
+        {history.map((attempt, i) => (
+          <div key={i} className="flex gap-2">
+            {attempt.map((entry, j) => (
+              <div
+                key={j}
+                className={`w-10 h-10 flex items-center justify-center text-white font-bold text-xl rounded ${getColor(entry.status)}`}
+              >
+                {entry.letter.toUpperCase()}
+              </div>
+            ))}
           </div>
         ))}
       </div>

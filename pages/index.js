@@ -1,4 +1,4 @@
-// WordRally – mit Flip-Animation pro Buchstabe und Wackeln bei Fehlern
+// WordRally – mit Flip-Animation, Wackeln bei Fehlern und sanften Farbübergängen
 
 import { useState, useEffect } from "react";
 
@@ -110,6 +110,19 @@ export default function WordRally() {
           0% { transform: rotateX(0); }
           100% { transform: rotateX(360deg); }
         }
+
+        .tile {
+          transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .tile.correct {
+          background-color: #16a34a;
+        }
+        .tile.misplaced {
+          background-color: #eab308;
+        }
+        .tile.wrong {
+          background-color: #1f2937;
+        }
       `}</style>
 
       <h1 className="text-4xl mb-6 border-b border-green-700 pb-2">WordRally 🟢</h1>
@@ -160,7 +173,7 @@ export default function WordRally() {
               <div
                 key={j}
                 style={{ animationDelay: `${j * 0.1}s` }}
-                className={`w-10 h-10 flex items-center justify-center text-white font-bold text-xl rounded ${getColor(entry.status)} flip`}
+                className={`tile flip w-10 h-10 flex items-center justify-center text-white font-bold text-xl rounded ${entry.status}`}
               >
                 {entry.letter.toUpperCase()}
               </div>
@@ -171,4 +184,5 @@ export default function WordRally() {
     </div>
   );
 }
+
 

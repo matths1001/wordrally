@@ -1,4 +1,4 @@
-// WordRally – modernes, etwas dunkleres neutrales Farbschema (Beige)
+// WordRally – modernes, etwas dunkleres neutrales Farbschema (Beige) mit Versuchsbegrenzung & Timer
 
 import { useState, useEffect } from "react";
 
@@ -25,6 +25,9 @@ export default function WordRally() {
   const [history, setHistory] = useState([]);
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {
     const words = wordLists[language][length];
@@ -33,15 +36,21 @@ export default function WordRally() {
     setHistory([]);
     setGuess("");
     setError("");
+    setGameOver(false);
+    setStartTime(Date.now());
+    setEndTime(null);
   }, [language, length]);
 
   const handleGuess = () => {
+    if (gameOver) return;
+
     if (guess.length !== length) {
       setError(`Das Wort muss genau ${length} Buchstaben haben.`);
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
     }
+
     setError("");
     const result = [];
     const used = Array(length).fill(false);
@@ -69,14 +78,28 @@ export default function WordRally() {
       }
     }
 
-    setHistory([...history, result]);
+    const newHistory = [...history, result];
+    setHistory(newHistory);
     setGuess("");
+
+    const isCorrect = result.every((r) => r.status === "correct");
+    const isLastAttempt = newHistory.length >= 6;
+
+    if (isCorrect || isLastAttempt) {
+      setGameOver(true);
+      setEndTime(Date.now());
+    }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleGuess();
     }
+  };
+
+  const getElapsedSeconds = () => {
+    if (!startTime || !endTime) return null;
+    return Math.floor((endTime - startTime) / 1000);
   };
 
   return (
@@ -117,7 +140,14 @@ export default function WordRally() {
         }
       `}</style>
 
-      <h1 className="text-4xl mb-6 border-b border-yellow-400 pb-2">WordRally</h1>
+      <h1 className="text-4xl mb-3 border-b border-yellow-400 pb-2">WordRally</h1>
+
+      <div className="flex justify-between items-center mb-3 text-sm">
+        <p>Versuche: {history.length} / 6</p>
+        {gameOver && endTime && (
+          <p>Zeit: {getElapsedSeconds()} Sekunden</p>
+        )}
+      </div>
 
       <div className="flex flex-wrap gap-4 mb-6">
         <select
@@ -145,16 +175,25 @@ export default function WordRally() {
           onChange={(e) => setGuess(e.target.value.toLowerCase())}
           onKeyDown={handleKeyDown}
           maxLength={length}
+          disabled={gameOver}
           className={`bg-white text-gray-800 border ${error ? "border-red-400" : "border-yellow-300"} w-full p-2 rounded ${shake ? "shake" : ""}`}
           placeholder="Dein Wort"
         />
         <button
           onClick={handleGuess}
+          disabled={gameOver}
           className="mt-3 bg-yellow-400 hover:bg-yellow-500 w-full py-2 text-lg font-bold text-white rounded"
         >
           Raten
         </button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
+        {gameOver && (
+          <p className="text-center mt-4 font-bold">
+            {history[history.length - 1].every((l) => l.status === "correct")
+              ? "🎉 Glückwunsch, du hast es erraten!"
+              : `❌ Leider verloren. Das Wort war: ${target.toUpperCase()}`}
+          </p>
+        )}
       </div>
 
       <div className="bg-white border border-yellow-200 p-4 rounded space-y-2">
@@ -176,4 +215,3 @@ export default function WordRally() {
     </div>
   );
 }
-

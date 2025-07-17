@@ -1,4 +1,4 @@
-// WordRally – Flip-Animation + Glow-Farben für Appstore-taugliches Design
+// WordRally – Flip-Animation mit modernem Farbschema ohne Glow
 
 import { useState, useEffect } from "react";
 
@@ -75,9 +75,9 @@ export default function WordRally() {
 
   const getColor = (status) => {
     switch (status) {
-      case "correct": return "bg-green-600";
-      case "misplaced": return "bg-yellow-500";
-      case "wrong": return "bg-gray-800";
+      case "correct": return "bg-emerald-600";
+      case "misplaced": return "bg-amber-400";
+      case "wrong": return "bg-zinc-700";
       default: return "bg-black";
     }
   };
@@ -89,7 +89,7 @@ export default function WordRally() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-green-400 font-mono p-6">
+    <div className="min-h-screen bg-neutral-900 text-neutral-100 font-mono p-6">
       <style>{`
         .shake {
           animation: shake 0.3s;
@@ -113,29 +113,26 @@ export default function WordRally() {
         }
 
         .tile {
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s;
+          transition: background-color 0.3s ease, transform 0.2s ease;
         }
         .tile.correct {
-          background-color: #00FF7F;
-          box-shadow: 0 0 12px #00FF7F;
+          background-color: #059669; /* emerald-600 */
         }
         .tile.misplaced {
-          background-color: #FFD700;
-          box-shadow: 0 0 12px #FFD700;
+          background-color: #f59e0b; /* amber-400 */
         }
         .tile.wrong {
-          background-color: #111;
-          box-shadow: inset 0 0 6px #000;
+          background-color: #3f3f46; /* zinc-700 */
         }
       `}</style>
 
-      <h1 className="text-4xl mb-6 border-b border-green-700 pb-2">WordRally 🟢</h1>
+      <h1 className="text-4xl mb-6 border-b border-emerald-500 pb-2">WordRally 🟢</h1>
 
       <div className="flex flex-wrap gap-4 mb-6">
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          className="bg-gray-900 text-green-300 p-2 border border-green-600 rounded"
+          className="bg-zinc-800 text-white p-2 border border-zinc-600 rounded"
         >
           <option value="de">Deutsch</option>
           <option value="en">English</option>
@@ -143,7 +140,7 @@ export default function WordRally() {
         <select
           value={length}
           onChange={(e) => setLength(Number(e.target.value))}
-          className="bg-gray-900 text-green-300 p-2 border border-green-600 rounded"
+          className="bg-zinc-800 text-white p-2 border border-zinc-600 rounded"
         >
           {[5, 6, 7, 8].map((n) => (
             <option key={n} value={n}>{n} Buchstaben</option>
@@ -157,20 +154,20 @@ export default function WordRally() {
           onChange={(e) => setGuess(e.target.value.toLowerCase())}
           onKeyDown={handleKeyDown}
           maxLength={length}
-          className={`bg-gray-900 text-green-400 border ${error ? "border-red-500" : "border-green-600"} w-full p-2 rounded ${shake ? "shake" : ""}`}
+          className={`bg-zinc-800 text-white border ${error ? "border-red-500" : "border-zinc-600"} w-full p-2 rounded ${shake ? "shake" : ""}`}
           placeholder="Dein Wort"
         />
         <button
           onClick={handleGuess}
-          className="mt-3 bg-green-600 hover:bg-green-700 w-full py-2 text-lg font-bold rounded"
+          className="mt-3 bg-emerald-600 hover:bg-emerald-700 w-full py-2 text-lg font-bold rounded"
         >
           Raten
         </button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
 
-      <div className="bg-gray-900 border border-green-700 p-4 rounded space-y-2">
-        {history.length === 0 && <p className="text-green-500">Gib dein erstes Wort ein!</p>}
+      <div className="bg-zinc-800 border border-zinc-700 p-4 rounded space-y-2">
+        {history.length === 0 && <p className="text-neutral-400">Gib dein erstes Wort ein!</p>}
         {history.map((attempt, i) => (
           <div key={i} className="flex gap-2">
             {attempt.map((entry, j) => (
@@ -188,3 +185,4 @@ export default function WordRally() {
     </div>
   );
 }
+

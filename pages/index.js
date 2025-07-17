@@ -1,4 +1,4 @@
-// WordRally – Eingabeverbesserung mit Wackelanimation bei Fehler
+// WordRally – mit Flip-Animation pro Buchstabe und Wackeln bei Fehlern
 
 import { useState, useEffect } from "react";
 
@@ -101,6 +101,15 @@ export default function WordRally() {
           75% { transform: translateX(-5px); }
           100% { transform: translateX(0); }
         }
+
+        .flip {
+          animation: flip 0.6s ease forwards;
+          transform-style: preserve-3d;
+        }
+        @keyframes flip {
+          0% { transform: rotateX(0); }
+          100% { transform: rotateX(360deg); }
+        }
       `}</style>
 
       <h1 className="text-4xl mb-6 border-b border-green-700 pb-2">WordRally 🟢</h1>
@@ -150,7 +159,8 @@ export default function WordRally() {
             {attempt.map((entry, j) => (
               <div
                 key={j}
-                className={`w-10 h-10 flex items-center justify-center text-white font-bold text-xl rounded ${getColor(entry.status)}`}
+                style={{ animationDelay: `${j * 0.1}s` }}
+                className={`w-10 h-10 flex items-center justify-center text-white font-bold text-xl rounded ${getColor(entry.status)} flip`}
               >
                 {entry.letter.toUpperCase()}
               </div>

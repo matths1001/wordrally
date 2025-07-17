@@ -1,4 +1,4 @@
-// WordRally – modernes, neutrales Farbschema (Beige)
+// WordRally – modernes, etwas dunkleres neutrales Farbschema (Beige)
 
 import { useState, useEffect } from "react";
 
@@ -80,7 +80,7 @@ export default function WordRally() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fdf6e3] text-gray-800 font-sans p-6">
+    <div className="min-h-screen bg-[#f5efe0] text-gray-800 font-sans p-6">
       <style>{`
         .shake {
           animation: shake 0.3s;
@@ -107,13 +107,13 @@ export default function WordRally() {
           transition: background-color 0.3s ease, transform 0.2s ease;
         }
         .tile.correct {
-          background-color: #4caf50; /* friendly green */
+          background-color: #4caf50;
         }
         .tile.misplaced {
-          background-color: #ffb74d; /* soft orange */
+          background-color: #fb8c00;
         }
         .tile.wrong {
-          background-color: #d7ccc8; /* light beige gray */
+          background-color: #c7bfb3;
         }
       `}</style>
 
@@ -176,3 +176,4 @@ export default function WordRally() {
     </div>
   );
 }
+

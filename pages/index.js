@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 const wordLists = {
   de: {
-    5: ["apfel", "blume", "stuhl", "glas"],
+    5: ["apfel", "blume", "stuhl", "katze"],
     6: ["banane", "fenster", "kerzen"],
     7: ["schacht", "dunkler"],
     8: ["flugzeug", "computer"]

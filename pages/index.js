@@ -1,4 +1,4 @@
-// WordRally – Highscore-System mit Punkten, Sternen & Zeit mit Neustartfunktion
+// WordRally – Verbesserungen: Live-Timer, Highscore-Anzeige, Reset-Fehlermeldung, Responsiveness, Highscore bei Spielstart
 
 import { useState, useEffect } from "react";
 
@@ -30,6 +30,7 @@ export default function WordRally() {
   const [gameOver, setGameOver] = useState(false);
   const [highscore, setHighscore] = useState(null);
   const [newHighscore, setNewHighscore] = useState(false);
+  const [now, setNow] = useState(Date.now());
 
   const startNewGame = () => {
     const words = wordLists[language][length];
@@ -40,6 +41,7 @@ export default function WordRally() {
     setError("");
     setGameOver(false);
     setStartTime(Date.now());
+    setNow(Date.now());
     setEndTime(null);
     setNewHighscore(false);
   };
@@ -49,6 +51,13 @@ export default function WordRally() {
     const saved = localStorage.getItem("wordrally_highscore");
     if (saved) setHighscore(JSON.parse(saved));
   }, [language, length]);
+
+  useEffect(() => {
+    if (!gameOver) {
+      const interval = setInterval(() => setNow(Date.now()), 1000);
+      return () => clearInterval(interval);
+    }
+  }, [gameOver]);
 
   const handleGuess = () => {
     if (gameOver) return;
@@ -97,24 +106,22 @@ export default function WordRally() {
       setEndTime(finish);
       setGameOver(true);
 
-      if (isCorrect) {
-        const time = Math.floor((finish - startTime) / 1000);
-        const attempts = newHistory.length;
-        const score = (6 - attempts) * 10 - Math.floor(time / 10);
-        let stars = 1;
-        if (attempts <= 3) stars = 3;
-        else if (attempts <= 5) stars = 2;
+      const time = Math.floor((finish - startTime) / 1000);
+      const attempts = newHistory.length;
+      const score = (6 - attempts) * 10 - Math.floor(time / 10);
+      let stars = 1;
+      if (attempts <= 3) stars = 3;
+      else if (attempts <= 5) stars = 2;
 
-        const current = { score, attempts, time, stars };
-        if (
-          !highscore ||
-          score > highscore.score ||
-          (score === highscore.score && time < highscore.time)
-        ) {
-          localStorage.setItem("wordrally_highscore", JSON.stringify(current));
-          setHighscore(current);
-          setNewHighscore(true);
-        }
+      const current = { score, attempts, time, stars };
+      if (
+        !highscore ||
+        score > highscore.score ||
+        (score === highscore.score && time < highscore.time)
+      ) {
+        localStorage.setItem("wordrally_highscore", JSON.stringify(current));
+        setHighscore(current);
+        setNewHighscore(true);
       }
     }
   };
@@ -124,12 +131,12 @@ export default function WordRally() {
   };
 
   const getElapsedSeconds = () => {
-    if (!startTime || !endTime) return null;
-    return Math.floor((endTime - startTime) / 1000);
+    if (!startTime) return 0;
+    return Math.floor(((endTime ?? now) - startTime) / 1000);
   };
 
   return (
-    <div className="min-h-screen bg-[#f5efe0] text-gray-800 font-sans p-6">
+    <div className="min-h-screen bg-[#f5efe0] text-gray-800 font-sans p-4 sm:p-6">
       <style>{`
         .shake {
           animation: shake 0.3s;
@@ -158,11 +165,14 @@ export default function WordRally() {
         .tile.wrong { background-color: #c7bfb3; }
       `}</style>
 
-      <h1 className="text-4xl mb-3 border-b border-yellow-400 pb-2">WordRally</h1>
+      <h1 className="text-4xl mb-2 sm:mb-3 border-b border-yellow-400 pb-2">WordRally</h1>
 
-      <div className="flex justify-between items-center mb-3 text-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-sm mb-3 space-y-1 sm:space-y-0">
         <p>Versuche: {history.length} / 6</p>
-        {gameOver && endTime && <p>Zeit: {getElapsedSeconds()}s</p>}
+        <p>Zeit: {getElapsedSeconds()}s</p>
+        {highscore && (
+          <p>🏆 Highscore: ⭐ {highscore.stars} · 🔢 {highscore.score} · ⏱ {highscore.time}s</p>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-4 mb-6">
@@ -214,9 +224,9 @@ export default function WordRally() {
       <div className="bg-white border border-yellow-200 p-4 rounded space-y-2">
         {history.length === 0 && <p className="text-gray-500">Gib dein erstes Wort ein!</p>}
         {history.map((attempt, i) => (
-          <div key={i} className="flex gap-2">
+          <div key={i} className="flex gap-1 sm:gap-2 justify-center">
             {attempt.map((entry, j) => (
-              <div key={j} style={{ animationDelay: `${j * 0.1}s` }} className={`tile flip w-10 h-10 flex items-center justify-center text-white font-bold text-xl rounded ${entry.status}`}>
+              <div key={j} style={{ animationDelay: `${j * 0.1}s` }} className={`tile flip w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-white font-bold text-lg sm:text-xl rounded ${entry.status}`}>
                 {entry.letter.toUpperCase()}
               </div>
             ))}
@@ -226,5 +236,4 @@ export default function WordRally() {
     </div>
   );
 }
-
 

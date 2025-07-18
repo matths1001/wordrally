@@ -1,4 +1,4 @@
-// WordRally – Verbesserungen: Live-Timer, Highscore-Anzeige, Reset-Fehlermeldung, Responsiveness, Highscore bei Spielstart
+// WordRally – Highscore korrekt anzeigen + Sterne als Symbole
 
 import { useState, useEffect } from "react";
 
@@ -31,6 +31,7 @@ export default function WordRally() {
   const [highscore, setHighscore] = useState(null);
   const [newHighscore, setNewHighscore] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [lastScore, setLastScore] = useState(null);
 
   const startNewGame = () => {
     const words = wordLists[language][length];
@@ -44,6 +45,7 @@ export default function WordRally() {
     setNow(Date.now());
     setEndTime(null);
     setNewHighscore(false);
+    setLastScore(null);
   };
 
   useEffect(() => {
@@ -114,6 +116,8 @@ export default function WordRally() {
       else if (attempts <= 5) stars = 2;
 
       const current = { score, attempts, time, stars };
+      setLastScore(current);
+
       if (
         !highscore ||
         score > highscore.score ||
@@ -134,6 +138,8 @@ export default function WordRally() {
     if (!startTime) return 0;
     return Math.floor(((endTime ?? now) - startTime) / 1000);
   };
+
+  const renderStars = (num) => "⭐".repeat(num);
 
   return (
     <div className="min-h-screen bg-[#f5efe0] text-gray-800 font-sans p-4 sm:p-6">
@@ -171,7 +177,7 @@ export default function WordRally() {
         <p>Versuche: {history.length} / 6</p>
         <p>Zeit: {getElapsedSeconds()}s</p>
         {highscore && (
-          <p>🏆 Highscore: ⭐ {highscore.stars} · 🔢 {highscore.score} · ⏱ {highscore.time}s</p>
+          <p>🏆 Highscore: {renderStars(highscore.stars)} · 🔢 {highscore.score} · ⏱ {highscore.time}s</p>
         )}
       </div>
 
@@ -209,9 +215,9 @@ export default function WordRally() {
             {history[history.length - 1].every((l) => l.status === "correct") ? (
               <>
                 🎉 Glückwunsch!<br/>
-                ⭐ Sterne: {highscore?.stars} <br/>
-                🔢 Punkte: {highscore?.score} <br/>
-                ⏱ Zeit: {highscore?.time}s <br/>
+                ⭐ Sterne: {renderStars(lastScore?.stars || 0)} <br/>
+                🔢 Punkte: {lastScore?.score} <br/>
+                ⏱ Zeit: {lastScore?.time}s <br/>
                 {newHighscore && <p className="text-green-600 mt-2">🏆 Neuer Highscore!</p>}
               </>
             ) : (

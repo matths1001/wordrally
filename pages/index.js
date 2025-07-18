@@ -17,8 +17,13 @@ const wordLists = {
   }
 };
 
-const successSound = typeof Audio !== "undefined" ? new Audio("/success.mp3") : null;
-const failSound = typeof Audio !== "undefined" ? new Audio("/fail.mp3") : null;
+let successSound = null;
+let failSound = null;
+
+if (typeof window !== "undefined") {
+  successSound = new Audio("/success.mp3");
+  failSound = new Audio("/fail.mp3");
+}
 
 export default function WordRally() {
   const [language, setLanguage] = useState("de");
@@ -139,6 +144,7 @@ export default function WordRally() {
       const updatedList = [...highscores, current]
         .sort((a, b) => b.score - a.score || a.time - b.time)
         .slice(0, 10);
+
       setHighscores(updatedList);
       localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
     }

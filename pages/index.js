@@ -151,9 +151,69 @@ export default function WordRally() {
   };
 
   return (
-    <main className="p-4 font-sans text-center">
+    <main className="p-4 font-sans text-center max-w-xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">WordRally</h1>
-      <p>Das Spiel funktioniert – aber der visuelle Aufbau (JSX) fehlt hier noch vollständig.</p>
+      <div className="mb-4 flex justify-center gap-2">
+        <select value={language} onChange={(e) => setLanguage(e.target.value)} className="border rounded p-1">
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+        </select>
+        <select value={length} onChange={(e) => setLength(Number(e.target.value))} className="border rounded p-1">
+          {[5, 6, 7, 8].map((n) => (
+            <option key={n} value={n}>{n} Buchstaben</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex justify-center gap-1 mb-4">
+        {history.map((row, i) => (
+          <div key={i} className="flex gap-1 mb-1">
+            {row.map((cell, j) => (
+              <div key={j} className={`w-8 h-8 flex items-center justify-center border rounded text-white font-bold
+                ${cell.status === "correct" ? "bg-green-500" :
+                  cell.status === "misplaced" ? "bg-yellow-500" :
+                  "bg-gray-400"}`}>{cell.letter}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {!gameOver && (
+        <div className="mb-4">
+          <input
+            ref={inputRef}
+            type="text"
+            value={guess}
+            onChange={(e) => setGuess(e.target.value.toLowerCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleGuess()}
+            maxLength={length}
+            className={`border p-2 text-center text-lg rounded w-40 ${shake ? "animate-shake" : ""}`}
+          />
+          <button onClick={handleGuess} className="ml-2 px-4 py-2 bg-blue-500 text-white rounded">OK</button>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </div>
+      )}
+
+      {gameOver && (
+        <div className="mb-4">
+          <p className="text-xl font-bold">{lastScore?.score >= 0 ? `Punkte: ${lastScore.score} | Zeit: ${lastScore.time}s` : ""}</p>
+          <div className="flex justify-center gap-1 mt-2">
+            {[...Array(lastScore?.stars || 0)].map((_, i) => (
+              <span key={i}>⭐</span>
+            ))}
+          </div>
+          <button onClick={startNewGame} className="mt-4 px-4 py-2 bg-green-600 text-white rounded">Neues Spiel</button>
+        </div>
+      )}
+
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-2">🏆 Highscores</h2>
+        <ol className="text-left">
+          {highscores.map((entry, i) => (
+            <li key={i}>{i + 1}. {entry.name} – {entry.score} Punkte, {entry.time}s, {entry.stars}⭐</li>
+          ))}
+        </ol>
+      </div>
     </main>
   );
-} // ← Komponente korrekt geschlossen ✅
+}

@@ -149,3 +149,4 @@ export default function WordRally() {
       localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
     }
   };
+} // <––– FEHLENDE SCHLUSS-KLAMMER JETZT HINZUGEFÜGT ✅

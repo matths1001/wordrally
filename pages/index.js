@@ -1,4 +1,4 @@
-// WordRally – Highscore-System mit Punkten, Sternen & Zeit
+// WordRally – Highscore-System mit Punkten, Sternen & Zeit mit Neustartfunktion
 
 import { useState, useEffect } from "react";
 
@@ -31,7 +31,7 @@ export default function WordRally() {
   const [highscore, setHighscore] = useState(null);
   const [newHighscore, setNewHighscore] = useState(false);
 
-  useEffect(() => {
+  const startNewGame = () => {
     const words = wordLists[language][length];
     const random = words[Math.floor(Math.random() * words.length)];
     setTarget(random);
@@ -42,6 +42,10 @@ export default function WordRally() {
     setStartTime(Date.now());
     setEndTime(null);
     setNewHighscore(false);
+  };
+
+  useEffect(() => {
+    startNewGame();
     const saved = localStorage.getItem("wordrally_highscore");
     if (saved) setHighscore(JSON.parse(saved));
   }, [language, length]);
@@ -184,6 +188,11 @@ export default function WordRally() {
         <button onClick={handleGuess} disabled={gameOver} className="mt-3 bg-yellow-400 hover:bg-yellow-500 w-full py-2 text-lg font-bold text-white rounded">
           Raten
         </button>
+        {gameOver && (
+          <button onClick={startNewGame} className="mt-3 bg-gray-300 hover:bg-gray-400 w-full py-2 text-md font-bold text-gray-800 rounded">
+            🔁 Neues Spiel starten
+          </button>
+        )}
         {error && <p className="text-red-500 mt-2">{error}</p>}
         {gameOver && (
           <div className="text-center mt-4 font-bold">
@@ -217,4 +226,5 @@ export default function WordRally() {
     </div>
   );
 }
+
 

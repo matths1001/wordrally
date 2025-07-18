@@ -149,4 +149,11 @@ export default function WordRally() {
       localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
     }
   };
-} // <––– FEHLENDE SCHLUSS-KLAMMER JETZT HINZUGEFÜGT ✅
+
+  return (
+    <main className="p-4 font-sans text-center">
+      <h1 className="text-3xl font-bold mb-4">WordRally</h1>
+      <p>Das Spiel funktioniert – aber der visuelle Aufbau (JSX) fehlt hier noch vollständig.</p>
+    </main>
+  );
+} // ← Komponente korrekt geschlossen ✅

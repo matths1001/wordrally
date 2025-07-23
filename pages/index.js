@@ -1,7 +1,7 @@
-// WordRally – Highscore-Board mit Top 10 Ergebnissen + Einstellungsmenü
+// WordRally – Spiel + Einstellungen kombiniert
 
 import { useState, useEffect, useRef } from "react";
-import { Settings } from "lucide-react";
+import { Settings2 } from "lucide-react";
 
 const wordLists = {
   de: {
@@ -43,12 +43,7 @@ export default function WordRally() {
   const [now, setNow] = useState(Date.now());
   const [lastScore, setLastScore] = useState(null);
   const [playerName, setPlayerName] = useState("");
-  const [awaitingName, setAwaitingName] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [soundOn, setSoundOn] = useState(true);
-  const [showTimer, setShowTimer] = useState(true);
-  const [theme, setTheme] = useState("light");
-
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const inputRef = useRef(null);
 
   const startNewGame = () => {
@@ -64,18 +59,8 @@ export default function WordRally() {
     setEndTime(null);
     setNewHighscore(false);
     setLastScore(null);
-    setAwaitingName(false);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
-
-  useEffect(() => {
-    const savedSound = localStorage.getItem("wordrally_sound");
-    const savedTimer = localStorage.getItem("wordrally_timer");
-    const savedTheme = localStorage.getItem("wordrally_theme");
-    if (savedSound !== null) setSoundOn(savedSound === "true");
-    if (savedTimer !== null) setShowTimer(savedTimer === "true");
-    if (savedTheme) setTheme(savedTheme);
-  }, []);
 
   useEffect(() => {
     startNewGame();
@@ -146,76 +131,122 @@ export default function WordRally() {
       if (attempts <= 3) stars = 3;
       else if (attempts <= 5) stars = 2;
 
-      const current = { name: "", score, attempts, time, stars };
+      const current = { name: playerName || "Spieler", score, attempts, time, stars };
       setLastScore(current);
-      setAwaitingName(true);
 
-      if (soundOn && isCorrect && successSound) successSound.play();
-      if (soundOn && !isCorrect && isLastAttempt && failSound) failSound.play();
+      if (isCorrect && successSound) successSound.play();
+      if (!isCorrect && isLastAttempt && failSound) failSound.play();
+
+      if (!highscore || score > highscore.score || (score === highscore.score && time < highscore.time)) {
+        localStorage.setItem("wordrally_highscore", JSON.stringify(current));
+        setHighscore(current);
+        setNewHighscore(true);
+      }
+
+      const updatedList = [...highscores, current]
+        .sort((a, b) => b.score - a.score || a.time - b.time)
+        .slice(0, 10);
+
+      setHighscores(updatedList);
+      localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
     }
-  };
-
-  const saveScoreWithName = () => {
-    if (!playerName) return;
-    const current = { ...lastScore, name: playerName };
-    setLastScore(current);
-    setAwaitingName(false);
-
-    if (!highscore || current.score > highscore.score || (current.score === highscore.score && current.time < highscore.time)) {
-      localStorage.setItem("wordrally_highscore", JSON.stringify(current));
-      setHighscore(current);
-      setNewHighscore(true);
-    }
-
-    const updatedList = [...highscores, current]
-      .sort((a, b) => b.score - a.score || a.time - b.time)
-      .slice(0, 10);
-
-    setHighscores(updatedList);
-    localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
-  };
-
-  const toggleSetting = (key, valueSetter, storageKey) => {
-    valueSetter((prev) => {
-      localStorage.setItem(storageKey, !prev);
-      return !prev;
-    });
-  };
-
-  const toggleTheme = () => {
-    setTheme((prev) => {
-      const newTheme = prev === "light" ? "dark" : "light";
-      localStorage.setItem("wordrally_theme", newTheme);
-      return newTheme;
-    });
   };
 
   return (
-    <main className={`p-4 font-sans text-center max-w-xl mx-auto ${theme === "dark" ? "bg-black text-white" : ""}`}>
-      <div className="flex justify-between mb-4">
+    <main className="p-4 font-sans text-center">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">WordRally</h1>
-        <button onClick={() => setShowSettings(!showSettings)} className="p-1"><Settings size={24} /></button>
+        <button onClick={() => setSettingsOpen(!settingsOpen)} className="hover:opacity-70">
+          <Settings2 className="w-6 h-6" />
+        </button>
       </div>
 
-      {showSettings && (
-        <div className="border p-4 rounded mb-4 bg-gray-100 text-left text-sm">
+      {settingsOpen && (
+        <div className="bg-white shadow-md rounded p-4 mb-4">
+          <h2 className="text-lg font-semibold mb-2">Einstellungen</h2>
           <label className="block mb-2">
-            <input type="checkbox" checked={soundOn} onChange={() => toggleSetting("sound", setSoundOn, "wordrally_sound")} />
-            <span className="ml-2">Soundeffekte aktivieren</span>
+            Sprache:
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="ml-2 border rounded">
+              <option value="de">Deutsch</option>
+              <option value="en">Englisch</option>
+            </select>
           </label>
           <label className="block mb-2">
-            <input type="checkbox" checked={showTimer} onChange={() => toggleSetting("timer", setShowTimer, "wordrally_timer")} />
-            <span className="ml-2">Timer anzeigen</span>
+            Wortlänge:
+            <select value={length} onChange={(e) => setLength(parseInt(e.target.value))} className="ml-2 border rounded">
+              <option value={5}>5</option>
+              <option value={6}>6</option>
+              <option value={7}>7</option>
+              <option value={8}>8</option>
+            </select>
           </label>
           <label className="block mb-2">
-            <input type="checkbox" checked={theme === "dark"} onChange={toggleTheme} />
-            <span className="ml-2">Dunkler Modus</span>
+            Spielername:
+            <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} className="ml-2 border rounded px-2" />
           </label>
         </div>
       )}
 
-      {/* ...Rest bleibt wie gehabt... */}
+      {/* Spielbereich */}
+      <div className="mb-4">
+        {!gameOver && <p className="mb-2">Versuch {history.length + 1} von 6</p>}
+        <input
+          ref={inputRef}
+          value={guess}
+          onChange={(e) => setGuess(e.target.value.toLowerCase())}
+          onKeyDown={(e) => e.key === "Enter" && handleGuess()}
+          disabled={gameOver}
+          className={`border p-2 rounded w-48 mb-2 ${shake ? "animate-shake" : ""}`}
+          placeholder="Dein Wort"
+        />
+        <br />
+        <button onClick={handleGuess} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          Prüfen
+        </button>
+        {error && <p className="text-red-500 mt-2">{error}</p>}
+      </div>
 
+      <div className="space-y-2 mb-4">
+        {history.map((row, i) => (
+          <div key={i} className="flex justify-center space-x-1">
+            {row.map((r, j) => (
+              <span
+                key={j}
+                className={`px-2 py-1 rounded text-white font-bold ${
+                  r.status === "correct"
+                    ? "bg-green-500"
+                    : r.status === "misplaced"
+                    ? "bg-yellow-500"
+                    : "bg-gray-500"
+                }`}
+              >
+                {r.letter}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {gameOver && lastScore && (
+        <div className="mb-4">
+          <p>⭐️ Sterne: {"★".repeat(lastScore.stars)}</p>
+          <p>🏁 Versuche: {lastScore.attempts} | ⏱️ Zeit: {lastScore.time}s | 🔢 Punkte: {lastScore.score}</p>
+          <button onClick={startNewGame} className="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+            Neu starten
+          </button>
+        </div>
+      )}
+
+      <div className="text-left max-w-md mx-auto">
+        <h2 className="text-xl font-semibold mb-2">🏆 Highscores</h2>
+        <ol className="space-y-1">
+          {highscores.map((entry, i) => (
+            <li key={i}>
+              {i + 1}. {entry.name} – {entry.score} Punkte ({entry.attempts} Versuche, {entry.time}s, {"★".repeat(entry.stars)})
+            </li>
+          ))}
+        </ol>
+      </div>
     </main>
   );
 }

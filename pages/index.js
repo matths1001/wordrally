@@ -214,7 +214,8 @@ export default function WordRally() {
         </div>
       )}
 
-      <!-- ...Rest bleibt wie gehabt... -->
+      {/* ...Rest bleibt wie gehabt... */}
+
     </main>
   );
 }

@@ -42,6 +42,7 @@ export default function WordRally() {
   const [now, setNow] = useState(Date.now());
   const [lastScore, setLastScore] = useState(null);
   const [playerName, setPlayerName] = useState("");
+  const [awaitingName, setAwaitingName] = useState(false);
   const inputRef = useRef(null);
 
   const startNewGame = () => {
@@ -57,6 +58,7 @@ export default function WordRally() {
     setEndTime(null);
     setNewHighscore(false);
     setLastScore(null);
+    setAwaitingName(false);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -129,25 +131,33 @@ export default function WordRally() {
       if (attempts <= 3) stars = 3;
       else if (attempts <= 5) stars = 2;
 
-      const current = { name: playerName || "Spieler", score, attempts, time, stars };
+      const current = { name: "", score, attempts, time, stars };
       setLastScore(current);
+      setAwaitingName(true);
 
       if (isCorrect && successSound) successSound.play();
       if (!isCorrect && isLastAttempt && failSound) failSound.play();
-
-      if (!highscore || score > highscore.score || (score === highscore.score && time < highscore.time)) {
-        localStorage.setItem("wordrally_highscore", JSON.stringify(current));
-        setHighscore(current);
-        setNewHighscore(true);
-      }
-
-      const updatedList = [...highscores, current]
-        .sort((a, b) => b.score - a.score || a.time - b.time)
-        .slice(0, 10);
-
-      setHighscores(updatedList);
-      localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
     }
+  };
+
+  const saveScoreWithName = () => {
+    if (!playerName) return;
+    const current = { ...lastScore, name: playerName };
+    setLastScore(current);
+    setAwaitingName(false);
+
+    if (!highscore || current.score > highscore.score || (current.score === highscore.score && current.time < highscore.time)) {
+      localStorage.setItem("wordrally_highscore", JSON.stringify(current));
+      setHighscore(current);
+      setNewHighscore(true);
+    }
+
+    const updatedList = [...highscores, current]
+      .sort((a, b) => b.score - a.score || a.time - b.time)
+      .slice(0, 10);
+
+    setHighscores(updatedList);
+    localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
   };
 
   return (
@@ -194,15 +204,30 @@ export default function WordRally() {
         </div>
       )}
 
-      {gameOver && (
+      {gameOver && lastScore && (
         <div className="mb-4">
-          <p className="text-xl font-bold">{lastScore?.score >= 0 ? `Punkte: ${lastScore.score} | Zeit: ${lastScore.time}s` : ""}</p>
+          <p className="text-xl font-bold">Punkte: {lastScore.score} | Zeit: {lastScore.time}s</p>
           <div className="flex justify-center gap-1 mt-2">
-            {[...Array(lastScore?.stars || 0)].map((_, i) => (
+            {[...Array(lastScore.stars)].map((_, i) => (
               <span key={i}>⭐</span>
             ))}
           </div>
-          <button onClick={startNewGame} className="mt-4 px-4 py-2 bg-green-600 text-white rounded">Neues Spiel</button>
+          {awaitingName ? (
+            <div className="mt-4">
+              <input
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                placeholder="Dein Name"
+                className="border p-2 rounded"
+              />
+              <button onClick={saveScoreWithName} className="ml-2 px-4 py-2 bg-green-600 text-white rounded">
+                Speichern
+              </button>
+            </div>
+          ) : (
+            <button onClick={startNewGame} className="mt-4 px-4 py-2 bg-green-600 text-white rounded">Neues Spiel</button>
+          )}
         </div>
       )}
 
@@ -217,3 +242,4 @@ export default function WordRally() {
     </main>
   );
 }
+

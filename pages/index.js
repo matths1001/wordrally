@@ -165,9 +165,9 @@ export default function WordRally() {
         </select>
       </div>
 
-      <div className="flex justify-center gap-1 mb-4">
+      <div className="flex flex-col items-center gap-1 mb-4">
         {history.map((row, i) => (
-          <div key={i} className="flex gap-1 mb-1">
+          <div key={i} className="flex gap-1">
             {row.map((cell, j) => (
               <div key={j} className={`w-8 h-8 flex items-center justify-center border rounded text-white font-bold
                 ${cell.status === "correct" ? "bg-green-500" :

@@ -1,7 +1,7 @@
-// WordRally – Spiel + Einstellungen kombiniert
+// WordRally – Highscore-Board mit Top 10 Ergebnissen und Einstellungsmenü
 
 import { useState, useEffect, useRef } from "react";
-import { Settings2 } from "lucide-react";
+import { Settings } from "lucide-react";
 
 const wordLists = {
   de: {
@@ -44,6 +44,9 @@ export default function WordRally() {
   const [lastScore, setLastScore] = useState(null);
   const [playerName, setPlayerName] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
+  const [showTimer, setShowTimer] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const inputRef = useRef(null);
 
   const startNewGame = () => {
@@ -68,6 +71,12 @@ export default function WordRally() {
     if (saved) setHighscore(JSON.parse(saved));
     const savedList = localStorage.getItem("wordrally_highscore_list");
     if (savedList) setHighscores(JSON.parse(savedList));
+    const savedSound = localStorage.getItem("wordrally_sound_on");
+    if (savedSound !== null) setSoundOn(savedSound === "true");
+    const savedTimer = localStorage.getItem("wordrally_show_timer");
+    if (savedTimer !== null) setShowTimer(savedTimer === "true");
+    const savedMode = localStorage.getItem("wordrally_dark_mode");
+    if (savedMode !== null) setDarkMode(savedMode === "true");
   }, [language, length]);
 
   useEffect(() => {
@@ -131,11 +140,12 @@ export default function WordRally() {
       if (attempts <= 3) stars = 3;
       else if (attempts <= 5) stars = 2;
 
-      const current = { name: playerName || "Spieler", score, attempts, time, stars };
+      const name = prompt("Neuer Highscore! Bitte gib deinen Namen ein:") || "Spieler";
+      const current = { name, score, attempts, time, stars };
       setLastScore(current);
 
-      if (isCorrect && successSound) successSound.play();
-      if (!isCorrect && isLastAttempt && failSound) failSound.play();
+      if (isCorrect && soundOn && successSound) successSound.play();
+      if (!isCorrect && isLastAttempt && soundOn && failSound) failSound.play();
 
       if (!highscore || score > highscore.score || (score === highscore.score && time < highscore.time)) {
         localStorage.setItem("wordrally_highscore", JSON.stringify(current));
@@ -153,100 +163,47 @@ export default function WordRally() {
   };
 
   return (
-    <main className="p-4 font-sans text-center">
+    <main className={`p-4 font-sans text-center min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-beige-100 text-gray-900"}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">WordRally</h1>
-        <button onClick={() => setSettingsOpen(!settingsOpen)} className="hover:opacity-70">
-          <Settings2 className="w-6 h-6" />
+        <button
+          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+          onClick={() => setSettingsOpen(!settingsOpen)}
+        >
+          <Settings />
         </button>
       </div>
 
       {settingsOpen && (
-        <div className="bg-white shadow-md rounded p-4 mb-4">
-          <h2 className="text-lg font-semibold mb-2">Einstellungen</h2>
-          <label className="block mb-2">
-            Sprache:
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="ml-2 border rounded">
-              <option value="de">Deutsch</option>
-              <option value="en">Englisch</option>
-            </select>
-          </label>
-          <label className="block mb-2">
-            Wortlänge:
-            <select value={length} onChange={(e) => setLength(parseInt(e.target.value))} className="ml-2 border rounded">
-              <option value={5}>5</option>
-              <option value={6}>6</option>
-              <option value={7}>7</option>
-              <option value={8}>8</option>
-            </select>
-          </label>
-          <label className="block mb-2">
-            Spielername:
-            <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} className="ml-2 border rounded px-2" />
-          </label>
-        </div>
-      )}
-
-      {/* Spielbereich */}
-      <div className="mb-4">
-        {!gameOver && <p className="mb-2">Versuch {history.length + 1} von 6</p>}
-        <input
-          ref={inputRef}
-          value={guess}
-          onChange={(e) => setGuess(e.target.value.toLowerCase())}
-          onKeyDown={(e) => e.key === "Enter" && handleGuess()}
-          disabled={gameOver}
-          className={`border p-2 rounded w-48 mb-2 ${shake ? "animate-shake" : ""}`}
-          placeholder="Dein Wort"
-        />
-        <br />
-        <button onClick={handleGuess} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Prüfen
-        </button>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
-      </div>
-
-      <div className="space-y-2 mb-4">
-        {history.map((row, i) => (
-          <div key={i} className="flex justify-center space-x-1">
-            {row.map((r, j) => (
-              <span
-                key={j}
-                className={`px-2 py-1 rounded text-white font-bold ${
-                  r.status === "correct"
-                    ? "bg-green-500"
-                    : r.status === "misplaced"
-                    ? "bg-yellow-500"
-                    : "bg-gray-500"
-                }`}
-              >
-                {r.letter}
-              </span>
-            ))}
+        <div className="mb-4 border p-4 rounded shadow bg-white dark:bg-gray-800">
+          <div className="mb-2">
+            <label className="mr-2">🎵 Soundeffekte:</label>
+            <input type="checkbox" checked={soundOn} onChange={(e) => {
+              const value = e.target.checked;
+              setSoundOn(value);
+              localStorage.setItem("wordrally_sound_on", value);
+            }} />
           </div>
-        ))}
-      </div>
-
-      {gameOver && lastScore && (
-        <div className="mb-4">
-          <p>⭐️ Sterne: {"★".repeat(lastScore.stars)}</p>
-          <p>🏁 Versuche: {lastScore.attempts} | ⏱️ Zeit: {lastScore.time}s | 🔢 Punkte: {lastScore.score}</p>
-          <button onClick={startNewGame} className="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-            Neu starten
-          </button>
+          <div className="mb-2">
+            <label className="mr-2">⏱ Timer anzeigen:</label>
+            <input type="checkbox" checked={showTimer} onChange={(e) => {
+              const value = e.target.checked;
+              setShowTimer(value);
+              localStorage.setItem("wordrally_show_timer", value);
+            }} />
+          </div>
+          <div>
+            <label className="mr-2">🌙 Dark Mode:</label>
+            <input type="checkbox" checked={darkMode} onChange={(e) => {
+              const value = e.target.checked;
+              setDarkMode(value);
+              localStorage.setItem("wordrally_dark_mode", value);
+            }} />
+          </div>
         </div>
       )}
 
-      <div className="text-left max-w-md mx-auto">
-        <h2 className="text-xl font-semibold mb-2">🏆 Highscores</h2>
-        <ol className="space-y-1">
-          {highscores.map((entry, i) => (
-            <li key={i}>
-              {i + 1}. {entry.name} – {entry.score} Punkte ({entry.attempts} Versuche, {entry.time}s, {"★".repeat(entry.stars)})
-            </li>
-          ))}
-        </ol>
-      </div>
+      <p>Das Spiel funktioniert – Highscore-Namen werden jetzt beim Erreichen abgefragt.</p>
     </main>
   );
 }

@@ -203,7 +203,7 @@ export default function WordRally() {
         </div>
       )}
 
-      <p>Das Spiel funktioniert – Highscore-Namen werden jetzt beim Erreichen abgefragt.</p>
+     
     </main>
   );
 }

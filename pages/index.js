@@ -140,25 +140,27 @@ export default function WordRally() {
       if (attempts <= 3) stars = 3;
       else if (attempts <= 5) stars = 2;
 
-      const name = playerName || "Spieler";
-      const current = { name, score, attempts, time, stars };
-      setLastScore(current);
-
       if (isCorrect && soundOn && successSound) successSound.play();
       if (!isCorrect && isLastAttempt && soundOn && failSound) failSound.play();
 
-      if (!highscore || score > highscore.score || (score === highscore.score && time < highscore.time)) {
-        localStorage.setItem("wordrally_highscore", JSON.stringify(current));
-        setHighscore(current);
-        setNewHighscore(true);
-      }
+      setTimeout(() => {
+        const name = prompt("Du hast einen Highscore erreicht! Wie heißt du?") || "Spieler";
+        const current = { name, score, attempts, time, stars };
+        setLastScore(current);
 
-      const updatedList = [...highscores, current]
-        .sort((a, b) => b.score - a.score || a.time - b.time)
-        .slice(0, 10);
+        if (!highscore || score > highscore.score || (score === highscore.score && time < highscore.time)) {
+          localStorage.setItem("wordrally_highscore", JSON.stringify(current));
+          setHighscore(current);
+          setNewHighscore(true);
+        }
 
-      setHighscores(updatedList);
-      localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
+        const updatedList = [...highscores, current]
+          .sort((a, b) => b.score - a.score || a.time - b.time)
+          .slice(0, 10);
+
+        setHighscores(updatedList);
+        localStorage.setItem("wordrally_highscore_list", JSON.stringify(updatedList));
+      }, 300);
     }
   };
 
@@ -203,18 +205,68 @@ export default function WordRally() {
         </div>
       )}
 
-      <div className="mb-4">
-        <label className="mr-2">🧑‍🎓 Spielername:</label>
-        <input
-          type="text"
-          className="p-1 border rounded"
-          placeholder="Dein Name"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-        />
-      </div>
+      {!settingsOpen && (
+        <>
+          <div className="mb-4">
+            <input
+              ref={inputRef}
+              type="text"
+              className={`p-2 border rounded w-1/2 text-center text-xl ${shake ? "animate-shake" : ""}`}
+              value={guess}
+              onChange={(e) => setGuess(e.target.value.toLowerCase())}
+              onKeyDown={(e) => e.key === "Enter" && handleGuess()}
+              disabled={gameOver}
+            />
+            {error && <p className="text-red-500 mt-2">{error}</p>}
+          </div>
 
-      {/* Spiel- und Highscore-Komponenten würden hier folgen */}
+          <div className="space-y-2 mb-4">
+            {history.map((row, i) => (
+              <div key={i} className="flex justify-center space-x-2">
+                {row.map((cell, j) => (
+                  <span
+                    key={j}
+                    className={`w-10 h-10 flex items-center justify-center border rounded text-lg font-bold ${
+                      cell.status === "correct"
+                        ? "bg-green-500 text-white"
+                        : cell.status === "misplaced"
+                        ? "bg-yellow-400 text-white"
+                        : "bg-gray-300 text-black"
+                    }`}
+                  >
+                    {cell.letter}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {showTimer && !gameOver && (
+            <p className="mb-4 text-lg">⏱ Zeit: {Math.floor((now - startTime) / 1000)}s</p>
+          )}
+
+          {gameOver && (
+            <button
+              onClick={startNewGame}
+              className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              🔁 Neu starten
+            </button>
+          )}
+
+          <div className="text-left max-w-md mx-auto">
+            <h2 className="text-xl font-bold mb-2">🏆 Highscores</h2>
+            <ol className="list-decimal ml-4">
+              {highscores.map((entry, index) => (
+                <li key={index} className="mb-1">
+                  ⭐{entry.stars} – {entry.name} – {entry.score} Punkte – {entry.attempts} Versuche – {entry.time}s
+                </li>
+              ))}
+            </ol>
+          </div>
+        </>
+      )}
     </main>
   );
 }
+
